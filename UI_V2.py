@@ -1,13 +1,6 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import font_manager as fm
 from datetime import datetime, timedelta
-
-font_path = '/usr/share/fonts/opentype/noto/NotoSansCJK-Thin.ttc'
-font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
 
 # Sample data (replace with actual data loading method)
 data = {
@@ -49,21 +42,6 @@ data3 = {
         "敏感詞通知": ["Y"]
     }
 
-months = pd.date_range(start='2023-03-01', end='2024-02-29', freq='ME')
-monthly_data = pd.DataFrame({
-    '月份': months,
-    '查核項目總數': np.random.randint(70, 100, size=12),
-    '查核專員數': np.random.randint(35, 50, size=12),
-    '敏感詞次數': np.random.randint(220, 300, size=12),
-    '關鍵字次數': np.random.randint(330, 450, size=12)
-})
-# Set 月份 as index before calculations
-monthly_data = monthly_data.set_index('月份')
-
-# Calculate percentages
-monthly_data['敏感詞占比'] = (monthly_data['敏感詞次數'] / monthly_data['查核項目總數'] * 100).round(1)
-monthly_data['關鍵詞占比'] = (monthly_data['關鍵字次數'] / monthly_data['查核項目總數'] * 100).round(1)
-
 
 
 df = pd.DataFrame(data)
@@ -72,68 +50,36 @@ df3 = pd.DataFrame(data3)
 df["日期/時間"] = pd.to_datetime(df["日期/時間"])
 st.title("客服查核系統")
 
-
 # Sidebar Navigation
 st.sidebar.title("功能選單")
 page = st.sidebar.radio("選擇頁面", ["首頁", "質檢查核", "特定音檔查核", "系統設定"])
 
 if page == "首頁":
 
-    tab1, tab2, tab3 = st.tabs(["最近一次查核總覽", "當月統計", "當年趨勢"])
-        
-    with tab1:
-        st.subheader("最近一次查核總覽")
-        st.dataframe(df)
-    with tab2:  
-        st.subheader("最近一個月統計")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("查核項目總數", 10)
-        with col2:
-            st.metric("查核專員數", 15)
-        with col3:
-            st.metric("敏感詞次數", 30)
-        with col4:
-            st.metric("關鍵字次數", 45)
-
-        # Create pie chart for sensitive words
-        sensitive_words_data = {
-            'NCC': 7,
-            '個資': 2,
-            '違規': 1
-        }
-        fig1 = plt.figure(figsize=(10, 6))
-        plt.pie(sensitive_words_data.values(), labels=sensitive_words_data.keys(), autopct='%1.1f%%')
-        plt.title('敏感詞分布')
-        st.pyplot(fig1)
-
-    with tab3:
-
-        st.subheader("近一年統計")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("查核項目總數", 100)
-        with col2:
-            st.metric("查核專員數", 50)
-        with col3:
-            st.metric("敏感詞次數", 300)
-        with col4:
-            st.metric("關鍵字次數", 450)
-
-
-        st.subheader("數量趨勢")
-        st.area_chart(monthly_data[['查核項目總數', '查核專員數', '敏感詞次數', '關鍵字次數']])
-        
-        st.subheader("近一年統計趨勢")
-        st.dataframe(monthly_data.transpose(), height=400)
-        # 添加下載按鈕
-        csv = monthly_data.transpose().to_csv().encode('utf-8')
-        st.download_button(
-            label="下載CSV檔案",
-            data=csv,
-            file_name="monthly_stats.csv",
-            mime="text/csv"
-        )
+    st.subheader("最近一次查核總覽")
+    st.dataframe(df)
+    
+    st.subheader("最近一個月統計")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("查核項目總數", 10)
+    with col2:
+        st.metric("查核專員數", 15)
+    with col3:
+        st.metric("敏感詞次數", 30)
+    with col4:
+        st.metric("關鍵字次數", 45)
+    
+    st.subheader("近一年統計")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("查核項目總數", 100)
+    with col2:
+        st.metric("查核專員數", 50)
+    with col3:
+        st.metric("敏感詞次數", 300)
+    with col4:
+        st.metric("關鍵字次數", 450)
 
 elif page == "質檢查核":
     st.header("質檢查核")
@@ -173,15 +119,6 @@ elif page == "特定音檔查核":
             st.write("範例查核結果：")
             st.dataframe(df2)
 
-            st.write("對話紀錄：")
-
-            def highlight_text(text, target="謝謝", color="red"):
-                return text.replace(target, f'<span style="color: {color}">{target}</span>')
-            
-            st.write(" SPEAKER_00 (0.0s - 14.4s): 您好，陳先生您好，不好意思，我這邊是中央官民數位天空客服中心。")
-            text = " SPEAKER_00 (14.4s - 20.0s): 你好，謝謝。"
-            st.markdown(highlight_text(text), unsafe_allow_html=True)
-
 elif page == "系統設定":
     st.header("系統設定")
     st.subheader("角色權限與敏感詞通知設定")
@@ -202,4 +139,3 @@ elif page == "系統設定":
         st.write(f"{selected_role} 角色已更新權限: {', '.join(permissions)}")
         st.write(f"已儲存信件通知設定: {email_recipients}")
         st.dataframe(df3)
-    
